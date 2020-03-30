@@ -33,7 +33,7 @@ class App extends Component {
   render () {
     return <MainWrapper>
       <ToDoLists
-        style={{ margin: '1rem' }}
+        style={{ margin: '8px' }}
       />
     </MainWrapper>
   }

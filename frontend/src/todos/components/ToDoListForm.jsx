@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import Card from '@material-ui/core/Card'
 import CardContent from '@material-ui/core/CardContent'
@@ -8,6 +8,7 @@ import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
 import Typography from '@material-ui/core/Typography'
 import { TextField } from '../../shared/FormFields'
+import {getTodos} from './ToDoLists';
 
 const useStyles = makeStyles({
   card: {
@@ -30,14 +31,42 @@ const useStyles = makeStyles({
   }
 })
 
+const apiEndpoint = "http://localhost:3001/api/todoList";
+
+
 export const ToDoListForm = ({ toDoList, saveToDoList }) => {
   const classes = useStyles()
   const [todos, setTodos] = useState(toDoList.todos)
+
+
+  const editTodoItems = async (newTodoList) => {
+    const response = await fetch(`${apiEndpoint}/${toDoList.id}/todoItem`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        todos: newTodoList
+      })
+    })
+
+    const body = await response.json();
+    setTodos(newTodoList);
+    return body;
+  };
 
   const handleSubmit = event => {
     event.preventDefault()
     saveToDoList(toDoList.id, { todos })
   }
+
+  //remove Tasks
+  const removeHandler = index => {
+    const newArr = todos.filter((item, itemIndex) => {
+      return itemIndex !== index;
+    });
+    editTodoItems(newArr);
+  };
 
   return (
     <Card className={classes.card}>
@@ -68,10 +97,12 @@ export const ToDoListForm = ({ toDoList, saveToDoList }) => {
                 color='secondary'
                 className={classes.standardSpace}
                 onClick={() => {
-                  setTodos([ // immutable delete
-                    ...todos.slice(0, index),
-                    ...todos.slice(index + 1)
-                  ])
+                  removeHandler(index);
+                  // setTodos([ // immutable delete
+                  //   ...todos.slice(0, index),
+                  //   ...todos.slice(index + 1)
+                  // ])
+                  // editTodoItems();
                 }}
               >
                 <DeleteIcon />
