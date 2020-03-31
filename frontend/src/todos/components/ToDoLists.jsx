@@ -1,163 +1,161 @@
-import React, { Fragment, useState, useEffect } from "react";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemText from "@material-ui/core/ListItemText";
-import TextField from "@material-ui/core/TextField";
-import Button from "@material-ui/core/Button";
-import ListItemSecondaryAction from "@material-ui/core/ListItemSecondaryAction";
-import IconButton from "@material-ui/core/IconButton";
+import React, { Fragment, useState, useContext } from "react";
+import {
+  Paper,
+  Grid,
+  ListItemIcon,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+  Button,
+  ListItemSecondaryAction,
+  IconButton,
+  Typography
+} from "@material-ui/core";
 import DeleteOutlined from "@material-ui/icons/DeleteOutlined";
-
-import { Paper, Grid } from "@material-ui/core";
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import { ToDoListForm } from "./ToDoListForm";
+import { Context } from "../../provider";
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
-const apiEndpoint = "http://localhost:3001/api/todoList";
-
-export const getTodos = async () => {
-  const response = await fetch(apiEndpoint);
-  const body = await response.json();
-  if (response.status !== 200) throw Error(body.message);
-  return body;
-};
-
-const getPersonalTodos = async () => {
-  return await getTodos();
-};
-
-export const ToDoLists = ({ style }) => {
-  const [toDoLists, setToDoLists] = useState({});
+export const ToDoLists = () => {
+  const { state } = useContext(Context);
+  const { addTodoItem } = useContext(Context);
   const [activeList, setActiveList] = useState();
-  const [listName, setListName] = useState("");
 
-  useEffect(() => {
-    updateListState();
-  }, []);
+  return (
+    <Fragment>
 
-  const updateListState = () => {
-    getPersonalTodos().then(setToDoLists);
-  };
+      <Paper style={{ margin: '16px 8px', padding: 16 }}>
+        <Input />
+      </Paper>
 
-  const editTodoItems = async (currentList, todoItem) => {
-    await fetch(`${apiEndpoint}/${currentList}/todoItem`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: currentList.id,
-        name: currentList.name,
-        todos: [...todoItem]
-      })
-    })
-    .then(currentList => currentList.json())
-    .then(sleep(100).then(() => updateListState()))
-    .catch(e => console.error(e));
-  };
+      <Paper style={{ margin: 8 }}>
+        <List style={{ padding: 0 }}>
+          {state && state.map((task, index) => (
+            <Task
+              key={`${task.id}-${index}`}
+              divider={index !== state.length - 1}
+              setActiveList={setActiveList}
+              activeList={activeList}
+              task={task}
+            />
+          ))}
+        </List>
+      </Paper>
 
-  const addTodo = async data => {
-    await fetch(apiEndpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        id: data,
-        title: data,
-        todos: []
-      })
-    })
-      .then(data => data.json())
-      .then(sleep(100).then(() => updateListState()))
-      .catch(e => console.error(e));
-  };
+      {activeList && (
+        <ToDoListForm
+          key={activeList.id}
+          toDoList={activeList}
+          saveToDoList={(id, { todos }) => {
+            addTodoItem(id, todos);
+          }}
+        />
+      )}
+    </Fragment>
+  );
+};
 
-  const removeTodo = async data => {
-    const listID = data.id;
-    await fetch(`${apiEndpoint}/${listID}`, {
-      method: "DELETE"
-    })
-      .then(data => data.json())
-      .then(sleep(100).then(() => updateListState()))
-      .catch(e => console.error(e));
-  };
+export const Input = () => {
+  const [value, setValue] = useState("");
+  const { startAddTodo } = useContext(Context);
 
-  const handleSubmit = async event => {
-    event.preventDefault();
-    if (listName.length === 0) {
+  const handleSubmit = e => {
+    e.preventDefault();
+
+    if (!value) {
       return;
     }
-    await addTodo(listName);
-    setListName("");
+
+    const payload = {
+      id: value,
+      title: value,
+      todos: []
+    }
+
+    startAddTodo(payload);
+    setValue("");
   };
 
   return (
-    <>
-      <Fragment>
-        <Paper style={{ margin: 8 }}>
-          <List style={{padding: 0}}>
-            {Object.keys(toDoLists).map((key, index) => (
-              <>
-              <ListItem
-                key={key}
-                disableRipple
-                divider={index !== toDoLists.length - 1}
-                button
-                onClick={() => setActiveList(key)}
-                style={{height: '64px'}}
-              >
-                <ListItemText primary={toDoLists[key].title} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    edge="end"
-                    aria-label="delete"
-                    onClick={() => removeTodo(toDoLists[key])}
-                  >
-                    <DeleteOutlined />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-              </>
-            ))}
-          </List>
-        </Paper>
+    <form onSubmit={handleSubmit}>
+      <Grid container>
+        <Grid xs={10} md={11} item style={{ paddingRight: 16 }}>
+          <TextField
+           placeholder="Add Todo here"
+           value={value}
+           onChange={e => setValue(e.target.value)}
+           fullWidth
+         />
+       </Grid>
+       <Grid xs={2} md={1} item>
+         <Button
+           fullWidth
+           color="primary"
+           variant="outlined"
+           type="submit"
+         >
+           Add
+         </Button>
+       </Grid>
+     </Grid>
+   </form>
+  );
+};
 
-        {toDoLists[activeList] && (
-          <ToDoListForm
-            key={activeList} // use key to make React recreate component to reset internal state
-            toDoList={toDoLists[activeList]}
-            saveToDoList={(id, { todos }) => {
-              editTodoItems(id, todos);
-            }}
-          />
-        )}
+const Task = ({ divider, setActiveList, task, activeList }) => {
+  const { deleteTodo } = useContext(Context);
 
-        <Paper style={{ margin: 8, padding: 16 }}>
-          <form onSubmit={handleSubmit}>
-            <Grid container>
-              <Grid xs={10} md={11} item style={{ paddingRight: 16 }}>
-                <TextField
-                  placeholder="Add Todo here"
-                  value={listName}
-                  onChange={e => setListName(e.target.value)}
-                  fullWidth
-                />
-              </Grid>
-              <Grid xs={2} md={1} item>
-                <Button
-                  fullWidth
-                  color="primary"
-                  variant="outlined"
-                  type="submit"
-                >
-                  Add
-                </Button>
-              </Grid>
-            </Grid>
-          </form>
-        </Paper>
-      </Fragment>
-    </>
+  const handleDelete = () => {
+    deleteTodo(task);
+  };
+
+  const getTotalStatus = () => {
+    return task.todos.every((item) => (
+      item.finished === true
+    ))
+  }
+
+  const getTotal = () => {
+    let count = 0;
+    task.todos.forEach((item) => {
+      if (item.finished) {
+        count = count + 1;
+      }
+    })
+    return `${count}/${task.todos.length}`;
+  }
+
+  return (
+    <ListItem
+      disableRipple
+      divider={divider}
+      button
+      onClick={() => {
+        return activeList === task ? setActiveList() : setActiveList(task);
+      }}
+      style={{ height: "64px" }}
+    >
+      {getTotalStatus() && task.todos.length > 0 ? (
+        <ListItemIcon>
+          <CheckCircleIcon />
+        </ListItemIcon>
+      ) : (
+        <ListItemIcon>
+          <Typography>{getTotal()}</Typography>
+        </ListItemIcon>
+      )}
+
+      <ListItemText primary={task.title} />
+      <ListItemSecondaryAction>
+        <IconButton
+          edge="end"
+          aria-label="delete"
+          onClick={() => handleDelete()}
+        >
+          <DeleteOutlined />
+        </IconButton>
+      </ListItemSecondaryAction>
+    </ListItem>
   );
 };

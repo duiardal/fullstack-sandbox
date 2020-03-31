@@ -13,7 +13,16 @@ let todos = [
   {
     id: "first list",
     title: "First List",
-    todos: ["First todo of first list!"]
+    todos: [
+      {
+        name: "First todo of first list!",
+        finished: false
+      },
+      {
+        name: "second todo",
+        finished: false
+      }
+    ]
   }
 ];
 
@@ -48,13 +57,8 @@ app.put("/api/todoList/:id/todoItem", (req, res) => {
 
 app.delete('/api/todoList/:id', (req, res) => {
   const requestId = req.params.id;
-
-  let todoList = todos.filter((list) => {
-    return list.id === requestId;
-  })
-
-  const index = todos.indexOf(todoList);
-
+  const index = todos.findIndex(list => list.id === requestId);
+  todos = Object.assign([], todos);
   todos.splice(index, 1);
 
   res.json({ message: `List: ${requestId} deleted.`})
