@@ -15,7 +15,6 @@ export const addTodo = data => {
 };
 
 export const editTodo = data => {
-  console.log(data);
   return {
     type: "EDIT",
     data
