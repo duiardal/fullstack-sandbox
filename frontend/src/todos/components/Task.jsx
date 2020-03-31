@@ -9,7 +9,7 @@ import {
 } from "@material-ui/core";
 import DeleteOutlined from "@material-ui/icons/DeleteOutlined";
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import { Context } from "../../provider";
+import { Context } from "../../utils/provider";
 
 export const Task = ({ divider, setActiveList, task, activeList }) => {
   const { deleteTodo } = useContext(Context);

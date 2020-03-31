@@ -6,7 +6,7 @@ import {
 import { ToDoListForm } from "./ToDoListForm";
 import { Task } from "./Task";
 import { InputField } from "./InputField";
-import { Context } from "../../provider";
+import { Context } from "../../utils/provider";
 
 export const ToDoLists = () => {
   const { state } = useContext(Context);

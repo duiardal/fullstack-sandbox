@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { Grid, TextField, Button } from "@material-ui/core";
-import { Context } from "../../provider";
+import { Context } from "../../utils/provider";
 
 export const InputField = () => {
   const [value, setValue] = useState("");

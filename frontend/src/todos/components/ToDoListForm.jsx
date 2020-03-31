@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react'
+import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
 import AddIcon from '@material-ui/icons/Add'
 import DeleteOutlined from "@material-ui/icons/DeleteOutlined";
@@ -12,7 +12,6 @@ import {
   Checkbox,
   IconButton,
 } from '@material-ui/core'
-import { Context } from "../../provider";
 
 const useStyles = makeStyles({
   card: {
