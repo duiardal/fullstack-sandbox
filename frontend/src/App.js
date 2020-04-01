@@ -4,6 +4,7 @@ import AppBar from '@material-ui/core/AppBar'
 import Toolbar from '@material-ui/core/Toolbar'
 import Typography from '@material-ui/core/Typography'
 import { ToDoLists } from './todos/components/ToDoLists'
+import Provider from "../src/utils/provider";
 
 const MainAppBar = () => {
   return <AppBar position='static' color='primary'>
@@ -31,11 +32,13 @@ const MainWrapper = ({ children }) => {
 
 class App extends Component {
   render () {
-    return <MainWrapper>
-      <ToDoLists
-        style={{ margin: '1rem' }}
-      />
-    </MainWrapper>
+    return (
+      <MainWrapper>
+        <Provider>
+          <ToDoLists style={{ margin: "8px" }} />
+        </Provider>
+      </MainWrapper>
+    );
   }
 }
 

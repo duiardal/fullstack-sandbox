@@ -1,13 +1,17 @@
 import React, { useState } from 'react'
 import { makeStyles } from '@material-ui/styles'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import CardActions from '@material-ui/core/CardActions'
-import Button from '@material-ui/core/Button'
-import DeleteIcon from '@material-ui/icons/Delete'
 import AddIcon from '@material-ui/icons/Add'
-import Typography from '@material-ui/core/Typography'
-import { TextField } from '../../shared/FormFields'
+import DeleteOutlined from "@material-ui/icons/DeleteOutlined";
+import {
+  Input,
+  Card,
+  CardContent,
+  CardActions,
+  Button,
+  Typography,
+  Checkbox,
+  IconButton,
+} from '@material-ui/core'
 
 const useStyles = makeStyles({
   card: {
@@ -33,67 +37,91 @@ const useStyles = makeStyles({
 export const ToDoListForm = ({ toDoList, saveToDoList }) => {
   const classes = useStyles()
   const [todos, setTodos] = useState(toDoList.todos)
+  const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = event => {
     event.preventDefault()
     saveToDoList(toDoList.id, { todos })
   }
 
+  const handleRemoveTask = (todo) => {
+    const idx = todos.findIndex(t => t.name === todo.name);
+    todos.splice(idx, 1);
+
+    setTodos(todos);
+    saveToDoList(toDoList.id, { todos })
+  };
+
+  const handleCheckbox = (checkedStatus, todo) => {
+    if (!todo) {
+      return;
+    }
+    todo.finished = checkedStatus;
+    setTodos(todos);
+    saveToDoList(toDoList.id, { todos })
+  }
+
+  const setTodoName = (name, index) => {
+    setInputValue(name);
+    setTodos([
+      ...todos.slice(0, index),
+      {name: name, finished: false},
+      ...todos.slice(index + 1)
+    ]);
+    saveToDoList(toDoList.id, { todos })
+  }
+
   return (
     <Card className={classes.card}>
       <CardContent>
-        <Typography component='h2'>
-          {toDoList.title}
-        </Typography>
+        <Typography component="h2">{toDoList.title}</Typography>
         <form onSubmit={handleSubmit} className={classes.form}>
-          {todos.map((name, index) => (
+          {todos.map((todo, index) => (
             <div key={index} className={classes.todoLine}>
-              <Typography className={classes.standardSpace} variant='h6'>
-                {index + 1}
-              </Typography>
-              <TextField
-                label='What to do?'
-                value={name}
-                onChange={event => {
-                  setTodos([ // immutable update
-                    ...todos.slice(0, index),
-                    event.target.value,
-                    ...todos.slice(index + 1)
-                  ])
-                }}
+              <Checkbox
+                color="primary"
+                disableRipple
+                checked={todo.finished}
+                onChange={e => handleCheckbox(e.target.checked, todo)}
+              />
+              <Input
+                value={todo.name}
+                onChange={e => setTodoName(e.target.value, index)}
                 className={classes.textField}
               />
-              <Button
-                size='small'
-                color='secondary'
+              <IconButton
                 className={classes.standardSpace}
                 onClick={() => {
-                  setTodos([ // immutable delete
-                    ...todos.slice(0, index),
-                    ...todos.slice(index + 1)
-                  ])
+                  handleRemoveTask(todo);
                 }}
               >
-                <DeleteIcon />
-              </Button>
+                <DeleteOutlined />
+              </IconButton>
             </div>
           ))}
+
           <CardActions>
             <Button
-              type='button'
-              color='primary'
+              type="button"
+              color="primary"
               onClick={() => {
-                setTodos([...todos, ''])
+                setTodos([...todos, ""]);
               }}
             >
               Add Todo <AddIcon />
             </Button>
-            <Button type='submit' variant='contained' color='primary'>
-              Save
-            </Button>
+            {inputValue.length > 0 &&
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+              >
+                Save
+              </Button>
+            }
           </CardActions>
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }

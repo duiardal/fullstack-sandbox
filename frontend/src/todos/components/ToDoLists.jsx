@@ -1,73 +1,51 @@
-import React, { Fragment, useState, useEffect } from 'react'
-import Card from '@material-ui/core/Card'
-import CardContent from '@material-ui/core/CardContent'
-import List from '@material-ui/core/List'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemText from '@material-ui/core/ListItemText'
-import ListItemIcon from '@material-ui/core/ListItemIcon'
-import ReceiptIcon from '@material-ui/icons/Receipt'
-import Typography from '@material-ui/core/Typography'
-import { ToDoListForm } from './ToDoListForm'
+import React, { Fragment, useState, useContext } from "react";
+import { Paper, List, Typography } from "@material-ui/core";
+import { ToDoListForm } from "./ToDoListForm";
+import { Task } from "./Task";
+import { InputField } from "./InputField";
+import { Context } from "../../utils/provider";
 
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+export const ToDoLists = () => {
+  const { state } = useContext(Context);
+  const { editTodoList } = useContext(Context);
+  const [activeList, setActiveList] = useState();
 
-const getPersonalTodos = () => {
-  return sleep(1000).then(() => Promise.resolve({
-    '0000000001': {
-      id: '0000000001',
-      title: 'First List',
-      todos: ['First todo of first list!']
-    },
-    '0000000002': {
-      id: '0000000002',
-      title: 'Second List',
-      todos: ['First todo of second list!']
-    }
-  }))
-}
+  return (
+    <Fragment>
+      <Paper style={{ margin: "16px 8px", padding: 16 }}>
+        <InputField />
+      </Paper>
 
-export const ToDoLists = ({ style }) => {
-  const [toDoLists, setToDoLists] = useState({})
-  const [activeList, setActiveList] = useState()
-
-  useEffect(() => {
-    getPersonalTodos()
-      .then(setToDoLists)
-  }, [])
-
-  if (!Object.keys(toDoLists).length) return null
-  return <Fragment>
-    <Card style={style}>
-      <CardContent>
-        <Typography
-          component='h2'
-        >
-          My ToDo Lists
-        </Typography>
-        <List>
-          {Object.keys(toDoLists).map((key) => <ListItem
-            key={key}
-            button
-            onClick={() => setActiveList(key)}
-          >
-            <ListItemIcon>
-              <ReceiptIcon />
-            </ListItemIcon>
-            <ListItemText primary={toDoLists[key].title} />
-          </ListItem>)}
+      <Paper style={{ margin: 8 }}>
+        <List style={{ padding: 0 }}>
+          {state &&
+            state.map((task, index) => (
+              <Task
+                key={`${task.id}-${index}`}
+                divider={index !== state.length - 1}
+                setActiveList={setActiveList}
+                activeList={activeList}
+                task={task}
+              />
+            ))}
         </List>
-      </CardContent>
-    </Card>
-    {toDoLists[activeList] && <ToDoListForm
-      key={activeList} // use key to make React recreate component to reset internal state
-      toDoList={toDoLists[activeList]}
-      saveToDoList={(id, { todos }) => {
-        const listToUpdate = toDoLists[id]
-        setToDoLists({
-          ...toDoLists,
-          [id]: { ...listToUpdate, todos }
-        })
-      }}
-    />}
-  </Fragment>
-}
+      </Paper>
+
+      {activeList && state.length > 0 && (
+        <ToDoListForm
+          key={activeList.id}
+          toDoList={activeList}
+          saveToDoList={(id, { todos }) => {
+            editTodoList(id, todos);
+          }}
+        />
+      )}
+
+      {state.length === 0 && (
+        <Paper style={{ margin: "0 8px", padding: 16 }}>
+          <Typography>No todo's added</Typography>
+        </Paper>
+      )}
+    </Fragment>
+  );
+};
