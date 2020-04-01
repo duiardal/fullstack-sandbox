@@ -37,7 +37,6 @@ const useStyles = makeStyles({
 export const ToDoListForm = ({ toDoList, saveToDoList }) => {
   const classes = useStyles()
   const [todos, setTodos] = useState(toDoList.todos)
-  const [checked, setChecked] = useState(false)
   const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = event => {
@@ -54,10 +53,10 @@ export const ToDoListForm = ({ toDoList, saveToDoList }) => {
   };
 
   const handleCheckbox = (checkedStatus, todo) => {
+    if (!todo) {
+      return;
+    }
     todo.finished = checkedStatus;
-    setChecked(checkedStatus)
-
-    console.log(todo)
     setTodos(todos);
     saveToDoList(toDoList.id, { todos })
   }
@@ -81,8 +80,7 @@ export const ToDoListForm = ({ toDoList, saveToDoList }) => {
           {todos.map((todo, index) => (
             <div key={index} className={classes.todoLine}>
               <Checkbox
-                indeterminate={todo.finished}
-                color="default"
+                color="primary"
                 disableRipple
                 checked={todo.finished}
                 onChange={e => handleCheckbox(e.target.checked, todo)}

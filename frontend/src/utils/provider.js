@@ -21,9 +21,7 @@ const Provider = props => {
   const startAddTodo = data => {
     fetch(apiEndpoint, {
       method: "POST",
-      headers: {
-        "Content-type": "application/json"
-      },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
       body: JSON.stringify({
         id: data.id,
         title: data.title,
@@ -35,8 +33,20 @@ const Provider = props => {
       .catch(e => console.error(e));
   };
 
+  const editTodoList = (id, todos) => {
+    fetch(`${apiEndpoint}/${id}/todoItem`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({
+        todos: todos
+      })
+    })
+      .then(response => response.json())
+      .then(data => dispatch(editTodo(data)))
+      .catch(e => console.error(e));
+  };
+
   const deleteTodo = data => {
-    console.log(data)
     const listID = data.id;
     fetch(`${apiEndpoint}/${listID}`, {
       method: "DELETE"
@@ -46,39 +56,10 @@ const Provider = props => {
       .catch(e => console.error(e));
   };
 
-  const addTodoItem = (id, todos) => {
-    console.log(todos)
-    fetch(`${apiEndpoint}/${id}/todoItem`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        todos: todos
-      })
-    })
-    .then(response => response.json())
-    .then(data => dispatch(editTodo(data)))
-    .catch(e => console.error(e));
-  }
-
-  const editCheckedItem = (currentList, newTodo) => {
-    fetch(`${apiEndpoint}/${currentList.id}/todoItem`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        todos: [...{newTodo}]
-      })
-    })
-    .then(response => response.json())
-    .then(data => dispatch(editTodo(data)))
-    .catch(e => console.error(e));
-  }
-
   return (
-    <Context.Provider value={{ state, dispatch, startAddTodo, deleteTodo, addTodoItem, editCheckedItem }}>
+    <Context.Provider
+      value={{ state, dispatch, startAddTodo, deleteTodo, editTodoList }}
+    >
       {props.children}
     </Context.Provider>
   );

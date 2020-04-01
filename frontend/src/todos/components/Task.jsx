@@ -16,6 +16,7 @@ export const Task = ({ divider, setActiveList, task, activeList }) => {
 
   const handleDelete = () => {
     deleteTodo(task);
+    setActiveList();
   };
 
   const getTotalStatus = () => {
@@ -42,11 +43,14 @@ export const Task = ({ divider, setActiveList, task, activeList }) => {
       onClick={() => {
         return activeList === task ? setActiveList() : setActiveList(task);
       }}
-      style={{ height: "64px" }}
+      style={{
+        height: "64px",
+        background: getTotalStatus() === true && task.todos.length > 0 ? 'rgba(63, 81, 181, 0.1)' : 'transparent'
+      }}
     >
       {getTotalStatus() && task.todos.length > 0 ? (
         <ListItemIcon>
-          <CheckCircleIcon />
+          <CheckCircleIcon color='primary' />
         </ListItemIcon>
       ) : (
         <ListItemIcon>
