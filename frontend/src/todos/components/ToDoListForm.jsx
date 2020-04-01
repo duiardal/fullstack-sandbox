@@ -44,7 +44,7 @@ export const ToDoListForm = ({ toDoList, saveToDoList }) => {
     saveToDoList(toDoList.id, { todos })
   }
 
-  const handleRemoveTask = (todo, index) => {
+  const handleRemoveTask = (todo) => {
     const idx = todos.findIndex(t => t.name === todo.name);
     todos.splice(idx, 1);
 
@@ -68,7 +68,6 @@ export const ToDoListForm = ({ toDoList, saveToDoList }) => {
       {name: name, finished: false},
       ...todos.slice(index + 1)
     ]);
-    console.log(todos)
     saveToDoList(toDoList.id, { todos })
   }
 
@@ -93,7 +92,7 @@ export const ToDoListForm = ({ toDoList, saveToDoList }) => {
               <IconButton
                 className={classes.standardSpace}
                 onClick={() => {
-                  handleRemoveTask(todo, index);
+                  handleRemoveTask(todo);
                 }}
               >
                 <DeleteOutlined />
